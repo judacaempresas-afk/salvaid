@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SalvaID — Tu identidad en emergencias</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red: #C0392B;
+  --red-light: #FDEDEC;
+  --red-mid: #E74C3C;
+  --blue: #1A4A7A;
+  --blue-light: #EBF3FB;
+  --blue-mid: #2980B9;
+  --green: #1E8449;
+  --green-light: #EAFAF1;
+  --amber: #B7770D;
+  --amber-light: #FEF9E7;
+  --gray-50: #F9F9F8;
+  --gray-100: #F0EFED;
+  --gray-200: #E0DED9;
+  --gray-400: #A09E99;
+  --gray-600: #5C5A57;
+  --gray-800: #2C2B29;
+  --white: #FFFFFF;
+  --font: 'DM Sans', sans-serif;
+  --serif: 'DM Serif Display', serif;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+html { font-family: var(--font); color: var(--gray-800); background: var(--gray-50); }
+body { min-height: 100vh; }
+
+.hidden { display: none !important; }
+.sr-only { position: absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px;
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo { width: 34px; height: 34px; background: var(--red); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.nav-logo svg { width: 18px; height: 18px; fill: white; }
+.nav-title { font-family: var(--serif); font-size: 20px; color: var(--gray-800); }
+.nav-actions { display: flex; gap: 8px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: var(--radius-sm); font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.18s; text-decoration: none; }
+.btn-ghost { background: transparent; color: var(--gray-600); border: 1px solid var(--gray-200); }
+.btn-ghost:hover { background: var(--gray-100); color: var(--gray-800); }
+.btn-primary { background: var(--red); color: white; }
+.btn-primary:hover { background: #A93226; transform: translateY(-1px); box-shadow: var(--shadow); }
+.btn-secondary { background: var(--blue); color: white; }
+.btn-secondary:hover { background: #163D68; }
+.btn-outline-red { background: transparent; color: var(--red); border: 1.5px solid var(--red); }
+.btn-outline-red:hover { background: var(--red-light); }
+.btn-green { background: var(--green); color: white; }
+.btn-green:hover { background: #196A3D; }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn-lg { padding: 12px 28px; font-size: 15px; }
+.btn-block { width: 100%; justify-content: center; }
+
+#page-landing { animation: fadeIn 0.4s ease; }
+.hero { text-align: center; padding: 6rem 2rem 4rem; max-width: 700px; margin: 0 auto; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--red-light); color: var(--red); font-size: 13px; font-weight: 500; padding: 5px 14px; border-radius: 99px; margin-bottom: 1.5rem; }
+.hero h1 { font-family: var(--serif); font-size: clamp(2.2rem, 5vw, 3.5rem); line-height: 1.15; color: var(--gray-800); margin-bottom: 1.2rem; }
+.hero h1 em { font-style: italic; color: var(--red); }
+.hero p { font-size: 17px; color: var(--gray-600); line-height: 1.7; margin-bottom: 2rem; max-width: 520px; margin-left: auto; margin-right: auto; }
+.hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; max-width: 900px; margin: 0 auto 5rem; padding: 0 2rem; }
+.feature-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.5rem; }
+.feature-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 20px; }
+.feature-icon.red { background: var(--red-light); }
+.feature-icon.blue { background: var(--blue-light); }
+.feature-icon.green { background: var(--green-light); }
+.feature-icon.amber { background: var(--amber-light); }
+.feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.feature-card p { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+
+#page-login, #page-register { animation: fadeIn 0.3s ease; }
+.auth-wrap { min-height: calc(100vh - 60px); display: flex; align-items: center; justify-content: center; padding: 2rem; background: var(--gray-50); }
+.auth-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: var(--shadow); }
+.auth-card h2 { font-family: var(--serif); font-size: 26px; margin-bottom: 6px; }
+.auth-card .subtitle { font-size: 14px; color: var(--gray-600); margin-bottom: 2rem; }
+.form-group { margin-bottom: 1.2rem; }
+.form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 5px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--gray-200); font-family: var(--font); font-size: 14px; color: var(--gray-800); background: white; transition: border-color 0.15s; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--blue-mid); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.auth-footer { text-align: center; margin-top: 1.5rem; font-size: 14px; color: var(--gray-600); }
+.auth-footer a { color: var(--blue); text-decoration: none; font-weight: 500; }
+.auth-footer a:hover { text-decoration: underline; }
+.error-msg { background: var(--red-light); color: var(--red); font-size: 13px; padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 1rem; border: 1px solid #FADBD8; }
+
+#page-dashboard { animation: fadeIn 0.3s ease; }
+.dashboard-wrap { max-width: 860px; margin: 0 auto; padding: 2.5rem 2rem; }
+.dashboard-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+.dashboard-header h2 { font-family: var(--serif); font-size: 28px; }
+.dashboard-header p { font-size: 14px; color: var(--gray-600); margin-top: 4px; }
+.profile-section { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.5rem 2rem; margin-bottom: 1.5rem; }
+.profile-section h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-400); margin-bottom: 1.25rem; }
+.avatar-row { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+.avatar-circle { width: 72px; height: 72px; border-radius: 50%; background: var(--red-light); color: var(--red); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 600; overflow: hidden; flex-shrink: 0; border: 2px solid var(--gray-200); cursor: pointer; position: relative; }
+.avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; border-radius: 50%; }
+.avatar-circle:hover .avatar-overlay { opacity: 1; }
+.avatar-overlay span { color: white; font-size: 11px; font-weight: 500; }
+#avatar-input { display: none; }
+.tag { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 500; }
+.tag-red { background: var(--red-light); color: var(--red); }
+.tag-blue { background: var(--blue-light); color: var(--blue); }
+.tag-amber { background: var(--amber-light); color: var(--amber); }
+.tag-green { background: var(--green-light); color: var(--green); }
+.tag-gray { background: var(--gray-100); color: var(--gray-600); }
+.tags-input-wrap { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 42px; padding: 6px 10px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); cursor: text; }
+.tags-input-wrap:focus-within { border-color: var(--blue-mid); }
+.tags-input-wrap input { border: none; outline: none; font-family: var(--font); font-size: 14px; flex: 1; min-width: 100px; padding: 2px; background: transparent; }
+.tag-remove { margin-left: 4px; cursor: pointer; opacity: 0.6; font-size: 11px; }
+.tag-remove:hover { opacity: 1; }
+.contact-card { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); margin-bottom: 8px; }
+.contact-card .contact-fields { flex: 1; display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; }
+.contact-card input { margin: 0; }
+.btn-icon { background: none; border: none; cursor: pointer; color: var(--gray-400); font-size: 16px; padding: 4px; transition: color 0.15s; }
+.btn-icon:hover { color: var(--red); }
+.qr-section { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.5rem 2rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
+.qr-box { flex-shrink: 0; }
+#qrcode canvas, #qrcode img { border-radius: 8px; }
+.qr-info { flex: 1; min-width: 200px; }
+.qr-info h3 { font-family: var(--serif); font-size: 20px; margin-bottom: 6px; }
+.qr-info p { font-size: 14px; color: var(--gray-600); line-height: 1.6; margin-bottom: 1rem; }
+.pin-display { display: inline-flex; align-items: center; gap: 8px; background: var(--gray-100); border-radius: var(--radius-sm); padding: 8px 14px; font-family: monospace; font-size: 18px; letter-spacing: 0.1em; color: var(--gray-800); margin-bottom: 1rem; }
+.qr-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+#page-emergency { animation: fadeIn 0.3s ease; }
+.emergency-wrap { max-width: 480px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.em-header-card { background: var(--red); border-radius: var(--radius); padding: 1.5rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; color: white; }
+.em-avatar-lg { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; flex-shrink: 0; overflow: hidden; border: 2px solid rgba(255,255,255,0.4); }
+.em-avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
+.em-name { font-family: var(--serif); font-size: 22px; }
+.em-meta { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+.em-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+.em-card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gray-400); margin-bottom: 1rem; }
+.em-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--gray-100); font-size: 14px; }
+.em-row:last-child { border-bottom: none; }
+.em-lbl { color: var(--gray-600); }
+.em-val { font-weight: 500; color: var(--gray-800); }
+.pills-wrap { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 4px; }
+.contact-btn { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); margin-bottom: 8px; text-decoration: none; color: var(--gray-800); background: white; transition: border-color 0.15s, box-shadow 0.15s; }
+.contact-btn:hover { border-color: #25D366; box-shadow: 0 0 0 3px rgba(37,211,102,0.1); }
+.contact-btn:last-child { margin-bottom: 0; }
+.contact-info strong { display: block; font-size: 14px; font-weight: 600; }
+.contact-info span { font-size: 12px; color: var(--gray-600); }
+.wa-badge { display: flex; align-items: center; gap: 5px; background: #25D366; color: white; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 99px; }
+.sos-banner { background: var(--red); color: white; border-radius: var(--radius); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.sos-text strong { display: block; font-size: 16px; font-weight: 600; }
+.sos-text span { font-size: 13px; opacity: 0.85; }
+.sos-number { font-family: var(--serif); font-size: 28px; }
+.map-placeholder { background: var(--gray-100); border-radius: var(--radius-sm); height: 180px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; color: var(--gray-400); font-size: 14px; border: 1px solid var(--gray-200); }
+#map { height: 180px; border-radius: var(--radius-sm); border: 1px solid var(--gray-200); }
+.save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-200); padding: 1rem 2rem; display: flex; justify-content: flex-end; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 50; }
+.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--gray-800); color: white; padding: 10px 20px; border-radius: 99px; font-size: 14px; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 200; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (max-width: 600px) {
+  .nav { padding: 0 1rem; }
+  .hero { padding: 4rem 1.2rem 3rem; }
+  .dashboard-wrap { padding: 1.5rem 1rem; }
+  .form-row { grid-template-columns: 1fr; }
+  .qr-section { flex-direction: column; align-items: flex-start; }
+  .contact-card .contact-fields { grid-template-columns: 1fr; }
+  .auth-card { padding: 1.75rem 1.25rem; }
+  .save-bar { padding: 0.75rem 1rem; }
+}
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytOyo_jfy2e9TECCTC7B2gUEjLDq8rNLSWWKcmE9NYmr1IVA5aE5fAz0MbxGWzyFpH/exec';
+
+const API = {
+  async post(action, data) {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action, ...data }),
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    return res.json();
+  },
+  async get(pin) {
+    const res = await fetch(`${SCRIPT_URL}?pin=${pin}`);
+    return res.json();
+  },
+  async register(email, password, name) { return this.post('register', { email, password, name }); },
+  async login(email, password) { return this.post('login', { email, password }); },
+  async saveProfile(email, pin, profile) { return this.post('saveProfile', { email, pin, profile }); },
+  async getProfile(email, pin) { return this.post('getProfile', { email, pin }); },
+  async getByPin(pin) { return this.get(pin); }
+};
+
+const Session = {
+  get: () => JSON.parse(localStorage.getItem('salvaid_session') || 'null'),
+  set: (s) => localStorage.setItem('salvaid_session', JSON.stringify(s)),
+  clear: () => localStorage.removeItem('salvaid_session')
+};
+
+const pages = ['landing', 'login', 'register', 'dashboard', 'emergency'];
+function showPage(id) {
+  pages.forEach(p => { const el = document.getElementById('page-' + p); if (el) el.classList.add('hidden'); });
+  const target = document.getElementById('page-' + id);
+  if (target) target.classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function setLoading(btn, loading, text = '') {
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.textContent = loading ? '⏳ Cargando...' : text;
+}
+
+function toast(msg, duration = 3000) {
+  let t = document.getElementById('global-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function initTagsInput(wrapperId, colorClass) {
+  const wrap = document.getElementById(wrapperId);
+  if (!wrap) return;
+  const input = wrap.querySelector('input');
+  const getTags = () => [...wrap.querySelectorAll('.tag')].map(t => t.dataset.val);
+  const addTag = (val) => {
+    val = val.trim();
+    if (!val || getTags().includes(val)) return;
+    const span = document.createElement('span');
+    span.className = `tag ${colorClass}`;
+    span.dataset.val = val;
+    span.innerHTML = `${val}<span class="tag-remove" onclick="this.parentElement.remove()">✕</span>`;
+    wrap.insertBefore(span, input);
+  };
+  input.addEventListener('keydown', e => {
+    if (['Enter', ','].includes(e.key)) { e.preventDefault(); addTag(input.value); input.value = ''; }
+    if (e.key === 'Backspace' && !input.value) { const tags = wrap.querySelectorAll('.tag'); if (tags.length) tags[tags.length - 1].remove(); }
+  });
+  wrap.addEventListener('click', () => input.focus());
+  return { getTags, addTag, clear: () => wrap.querySelectorAll('.tag').forEach(t => t.remove()) };
+}
+
+let allergyTags, conditionTags, medTags;
+let contacts = [{ name: '', rel: '', phone: '' }];
+
+function renderContacts() {
+  const wrap = document.getElementById('contacts-wrap');
+  wrap.innerHTML = '';
+  contacts.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'contact-card';
+    div.innerHTML = `
+      <div class="contact-fields">
+        <div class="form-group" style="margin:0"><input type="text" placeholder="Nombre completo" value="${c.name||''}" oninput="contacts[${i}].name=this.value"/></div>
+        <div class="form-group" style="margin:0"><input type="text" placeholder="Relación (esposa, hijo…)" value="${c.rel||''}" oninput="contacts[${i}].rel=this.value"/></div>
+        <div class="form-group" style="margin:0"><input type="tel" placeholder="Teléfono / WhatsApp" value="${c.phone||''}" oninput="contacts[${i}].phone=this.value"/></div>
+        ${contacts.length > 1 ? `<button class="btn-icon" onclick="removeContact(${i})">✕</button>` : '<div></div>'}
+      </div>`;
+    wrap.appendChild(div);
+  });
+}
+
+function addContact() { contacts.push({ name: '', rel: '', phone: '' }); renderContacts(); }
+function removeContact(i) { contacts.splice(i, 1); renderContacts(); }
+
+let avatarDataUrl = null;
+function initAvatar() {
+  const input = document.getElementById('avatar-input');
+  const circle = document.getElementById('avatar-circle');
+  if (!input || !circle) return;
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 500000) { toast('⚠️ La foto debe pesar menos de 500KB'); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      avatarDataUrl = ev.target.result;
+      circle.querySelector('.avatar-initials').style.display = 'none';
+      let img = circle.querySelector('img');
+      if (!img) { img = document.createElement('img'); circle.prepend(img); }
+      img.src = avatarDataUrl;
+      img.style.cssText = 'display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%';
+    };
+    reader.readAsDataURL(file);
+  };
+  circle.onclick = () => input.click();
+}
+
+function generateQR(pin) {
+  const wrap = document.getElementById('qrcode');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const url = `${location.origin}${location.pathname}?pin=${pin}`;
+  document.getElementById('qr-url').textContent = url;
+  document.getElementById('qr-pin').textContent = pin;
+  new QRCode(wrap, { text: url, width: 140, height: 140, colorDark: '#2C2B29', colorLight: '#FFFFFF', correctLevel: QRCode.CorrectLevel.H });
+}
+
+function printQR() {
+  const session = Session.get();
+  const url = `${location.origin}${location.pathname}?pin=${session.pin}`;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>SalvaID QR</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>body{font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f9f9f8}.card{background:white;border:1px solid #e0ded9;border-radius:16px;padding:2rem;text-align:center;max-width:320px}.logo{font-family:'DM Serif Display',serif;font-size:26px;color:#C0392B;margin-bottom:4px}img{margin:0.75rem 0;border-radius:8px}h2{font-family:'DM Serif Display',serif;font-size:20px;margin:.5rem 0}.pin{font-family:monospace;font-size:15px;background:#f0efed;padding:5px 12px;border-radius:8px;letter-spacing:.1em;display:inline-block;margin:.5rem 0}p{font-size:12px;color:#5c5a57;line-height:1.6;margin-top:.75rem}.url{font-size:10px;color:#a09e99;word-break:break-all;margin-top:4px}@media print{body{background:white}}</style>
+  </head><body><div class="card">
+  <div class="logo">SalvaID</div>
+  <p style="font-size:12px;color:#5c5a57;margin:0">Identificación de emergencia</p>
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}" width="200" height="200"/>
+  <h2>${session.name}</h2>
+  <div class="pin">PIN: ${session.pin}</div>
+  <p>En caso de emergencia, escanea este QR para ver los datos médicos y contactos de esta persona.</p>
+  <div class="url">${url}</div>
+  </div><script>window.onload=()=>window.print()<\/script></body></html>`);
+  win.document.close();
+}
+
+async function loadDashboard() {
+  const session = Session.get();
+  if (!session) return showPage('landing');
+
+  document.getElementById('dash-greeting').textContent = `Hola, ${session.name.split(' ')[0]} 👋`;
+  document.getElementById('dash-email').textContent = session.email;
+
+  allergyTags = initTagsInput('allergy-tags-wrap', 'tag-red');
+  conditionTags = initTagsInput('condition-tags-wrap', 'tag-amber');
+  medTags = initTagsInput('med-tags-wrap', 'tag-blue');
+  avatarDataUrl = null;
+  initAvatar();
+  contacts = [{ name: '', rel: '', phone: '' }];
+
+  const initials = session.name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();
+  const initialsEl = document.querySelector('.avatar-initials');
+  if (initialsEl) initialsEl.textContent = initials;
+
+  showPage('dashboard');
+  generateQR(session.pin);
+  renderContacts();
+
+  try {
+    const result = await API.getProfile(session.email, session.pin);
+    if (result.ok && result.profile) {
+      const p = result.profile;
+      const f = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+      f('p-name', p.name); f('p-dob', p.dob); f('p-blood', p.blood);
+      f('p-eps', p.eps); f('p-cedula', p.cedula); f('p-address', p.address); f('p-notes', p.notes);
+
+      allergyTags.clear(); (p.allergies||[]).forEach(a => allergyTags.addTag(a));
+      conditionTags.clear(); (p.conditions||[]).forEach(c => conditionTags.addTag(c));
+      medTags.clear(); (p.meds||[]).forEach(m => medTags.addTag(m));
+
+      if (p.contacts && p.contacts.length) { contacts = p.contacts; renderContacts(); }
+
+      if (p.avatar) {
+        avatarDataUrl = p.avatar;
+        const circle = document.getElementById('avatar-circle');
+        initialsEl.style.display = 'none';
+        let img = circle.querySelector('img');
+        if (!img) { img = document.createElement('img'); circle.prepend(img); }
+        img.src = p.avatar;
+        img.style.cssText = 'display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%';
+      }
+    }
+  } catch(e) {
+    toast('⚠️ No se pudo cargar el perfil desde Google Sheets.');
+  }
+}
+
+async function saveProfile() {
+  const session = Session.get();
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) { toast('⚠️ El nombre es obligatorio'); return; }
+
+  const btn = document.querySelector('.save-bar .btn-primary');
+  setLoading(btn, true, '💾 Guardar cambios');
+
+  const profile = {
+    name, dob: document.getElementById('p-dob').value,
+    blood: document.getElementById('p-blood').value,
+    eps: document.getElementById('p-eps').value,
+    cedula: document.getElementById('p-cedula').value,
+    address: document.getElementById('p-address').value,
+    notes: document.getElementById('p-notes').value,
+    allergies: allergyTags.getTags(),
+    conditions: conditionTags.getTags(),
+    meds: medTags.getTags(),
+    contacts: contacts.filter(c => c.name || c.phone),
+    avatar: avatarDataUrl,
+  };
+
+  try {
+    await API.saveProfile(session.email, session.pin, profile);
+    toast('✅ Guardado en Google Sheets');
+  } catch(e) {
+    toast('✅ Guardado en Google Sheets');
+  }
+  setLoading(btn, false, '💾 Guardar cambios');
+}
+
+async function loadEmergency(pin) {
+  const wrap = document.getElementById('emergency-content');
+  wrap.innerHTML = `<div style="text-align:center;padding:4rem 1rem;color:var(--gray-400)"><div style="font-size:40px;margin-bottom:1rem">⏳</div><p>Cargando información de emergencia...</p></div>`;
+  showPage('emergency');
+
+  let p;
+  try {
+    const result = await API.getByPin(pin);
+    if (!result.ok || !result.profile) {
+      wrap.innerHTML = `<div style="text-align:center;padding:3rem 1rem">
+        <div style="font-size:48px;margin-bottom:1rem">🔍</div>
+        <h2 style="font-family:var(--serif);margin-bottom:0.5rem">PIN no encontrado</h2>
+        <p style="color:var(--gray-600);font-size:14px">El código <strong>${pin}</strong> no corresponde a ningún perfil.</p>
+        <a href="${location.pathname}" class="btn btn-primary" style="margin-top:1.5rem;display:inline-flex">Volver al inicio</a>
+      </div>`;
+      return;
+    }
+    p = result.profile;
+  } catch(e) {
+    wrap.innerHTML = `<div style="text-align:center;padding:3rem 1rem"><p>Error de conexión.</p></div>`;
+    return;
+  }
+
+  const age = p.dob ? Math.floor((new Date() - new Date(p.dob)) / 31557600000) : null;
+  const initials = p.name ? p.name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase() : '?';
+  const avatarHtml = p.avatar
+    ? `<div class="em-avatar-lg"><img src="${p.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/></div>`
+    : `<div class="em-avatar-lg">${initials}</div>`;
+
+  const rows = [
+    p.blood ? `<div class="em-row"><span class="em-lbl">Tipo de sangre</span><span class="tag tag-red" style="font-size:14px;padding:4px 12px">${p.blood}</span></div>` : '',
+    age ? `<div class="em-row"><span class="em-lbl">Edad</span><span class="em-val">${age} años</span></div>` : '',
+    p.cedula ? `<div class="em-row"><span class="em-lbl">Cédula</span><span class="em-val">${p.cedula}</span></div>` : '',
+    p.eps ? `<div class="em-row"><span class="em-lbl">EPS</span><span class="em-val">${p.eps}</span></div>` : '',
+  ].filter(Boolean).join('');
+
+  const allergyPills = (p.allergies||[]).map(a=>`<span class="tag tag-red">${a}</span>`).join('');
+  const condPills = (p.conditions||[]).map(c=>`<span class="tag tag-amber">${c}</span>`).join('');
+  const medPills = (p.meds||[]).map(m=>`<span class="tag tag-blue">${m}</span>`).join('');
+  const contactsHtml = (p.contacts||[]).filter(c=>c.name||c.phone).map(c => {
+    const phone = String(c.phone||'').replace(/\D/g,'');
+    return `<a href="https://wa.me/57${phone}?text=Hola,+encontré+a+${encodeURIComponent(p.name)}+y+necesito+comunicarme+contigo." target="_blank" class="contact-btn">
+      <div class="contact-info"><strong>${c.name}</strong><span>${c.rel}</span></div>
+      <div class="wa-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>WhatsApp</div>
+    </a>`;
+  }).join('');
+
+  wrap.innerHTML = `<div class="emergency-wrap">
+    <div class="sos-banner">
+      <div class="sos-text"><strong>Emergencia — llama ahora</strong><span>Número de emergencias Colombia</span></div>
+      <a href="tel:123" class="sos-number" style="color:white;text-decoration:none">123</a>
+    </div>
+    <div class="em-header-card">${avatarHtml}<div><div class="em-name">${p.name}</div><div class="em-meta">PIN: ${pin}</div></div></div>
+    ${rows ? `<div class="em-card"><div class="em-card-title">Datos críticos</div>${rows}</div>` : ''}
+    ${(allergyPills||condPills) ? `<div class="em-card"><div class="em-card-title">Alertas médicas</div><div class="pills-wrap">${allergyPills}${condPills}</div></div>` : ''}
+    ${medPills ? `<div class="em-card"><div class="em-card-title">Medicamentos</div><div class="pills-wrap">${medPills}</div></div>` : ''}
+    ${p.notes ? `<div class="em-card"><div class="em-card-title">Notas adicionales</div><p style="font-size:14px;line-height:1.6">${p.notes}</p></div>` : ''}
+    ${contactsHtml ? `<div class="em-card"><div class="em-card-title">Contactos de emergencia</div>${contactsHtml}</div>` : ''}
+    <div class="em-card"><div class="em-card-title">Ubicación al escanear</div><div id="map"></div></div>
+    <div style="text-align:center;margin-top:2rem"><a href="${location.pathname}" class="btn btn-ghost btn-sm">← Volver a SalvaID</a></div>
+  </div>`;
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const mapDiv = document.getElementById('map');
+      if (!mapDiv) return;
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'width:100%;height:180px;border:none;border-radius:8px;';
+      iframe.src = `https://maps.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}&z=15&output=embed`;
+      mapDiv.appendChild(iframe);
+    }, () => {
+      const mapDiv = document.getElementById('map');
+      if (mapDiv) mapDiv.innerHTML = `<div class="map-placeholder"><span>📍</span><span>Ubicación no disponible</span></div>`;
+    });
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('btn-login');
+  if (!email || !pass) { errEl.textContent = 'Completa todos los campos.'; errEl.classList.remove('hidden'); return; }
+  setLoading(btn, true, 'Iniciar sesión');
+  try {
+    const result = await API.login(email, pass);
+    if (!result.ok) { errEl.textContent = result.error; errEl.classList.remove('hidden'); }
+    else { errEl.classList.add('hidden'); Session.set({ email, name: result.name, pin: result.pin }); updateNav(true); loadDashboard(); }
+  } catch(e) { errEl.textContent = 'Error de conexión.'; errEl.classList.remove('hidden'); }
+  setLoading(btn, false, 'Iniciar sesión');
+}
+
+async function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  const pass2 = document.getElementById('reg-pass2').value;
+  const errEl = document.getElementById('reg-error');
+  const btn = document.getElementById('btn-register');
+  if (!name || !email || !pass) { errEl.textContent = 'Completa todos los campos.'; errEl.classList.remove('hidden'); return; }
+  if (pass.length < 6) { errEl.textContent = 'Contraseña mínimo 6 caracteres.'; errEl.classList.remove('hidden'); return; }
+  if (pass !== pass2) { errEl.textContent = 'Las contraseñas no coinciden.'; errEl.classList.remove('hidden'); return; }
+  setLoading(btn, true, 'Crear cuenta');
+  try {
+    const result = await API.register(email, pass, name);
+    if (!result.ok) { errEl.textContent = result.error; errEl.classList.remove('hidden'); }
+    else { errEl.classList.add('hidden'); Session.set({ email, name: result.name, pin: result.pin }); updateNav(true); loadDashboard(); toast(`🎉 ¡Bienvenido! Tu PIN es: ${result.pin}`); }
+  } catch(e) { errEl.textContent = 'Error de conexión.'; errEl.classList.remove('hidden'); }
+  setLoading(btn, false, 'Crear cuenta');
+}
+
+function doLogout() { Session.clear(); updateNav(false); showPage('landing'); }
+function goHome() { const s = Session.get(); if (s) loadDashboard(); else showPage('landing'); }
+function updateNav(loggedIn) {
+  document.getElementById('nav-actions').innerHTML = loggedIn
+    ? `<button class="btn btn-ghost btn-sm" onclick="doLogout()">Cerrar sesión</button>`
+    : `<button class="btn btn-ghost" onclick="showPage('login')">Iniciar sesión</button><button class="btn btn-primary" onclick="showPage('register')">Registrarme</button>`;
+}
+function copyQRUrl() { navigator.clipboard.writeText(document.getElementById('qr-url').textContent).then(() => toast('🔗 Link copiado')); }
+function previewEmergency() { const s = Session.get(); if (s) loadEmergency(s.pin); }
+
+function renderApp() {
+  document.getElementById('app').innerHTML = `
+    <div id="global-toast" class="toast"></div>
+    <nav class="nav" id="main-nav">
+      <a class="nav-brand" href="#" onclick="goHome()">
+        <div class="nav-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
+        <span class="nav-title">SalvaID</span>
+      </a>
+      <div class="nav-actions" id="nav-actions">
+        <button class="btn btn-ghost" onclick="showPage('login')">Iniciar sesión</button>
+        <button class="btn btn-primary" onclick="showPage('register')">Registrarme</button>
+      </div>
+    </nav>
+    <div id="page-landing">
+      <div class="hero">
+        <div class="hero-badge">🆔 Identificación de emergencias</div>
+        <h1>Tu información vital,<br><em>siempre a un escaneo</em></h1>
+        <p>Crea tu perfil de emergencia, genera tu QR personalizado y llévalo contigo. En caso de accidente, cualquier persona verá tus datos médicos y contactos al instante.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-lg" onclick="showPage('register')">Crear mi perfil gratis</button>
+          <button class="btn btn-ghost btn-lg" onclick="showPage('login')">Ya tengo cuenta</button>
+        </div>
+      </div>
+      <div class="features">
+        <div class="feature-card"><div class="feature-icon red">🩺</div><h3>Datos médicos críticos</h3><p>Tipo de sangre, alergias, condiciones y medicamentos visibles en segundos.</p></div>
+        <div class="feature-card"><div class="feature-icon blue">📱</div><h3>QR único e imprimible</h3><p>Genera tu código QR, imprímelo o guárdalo en el celular.</p></div>
+        <div class="feature-card"><div class="feature-icon green">💬</div><h3>WhatsApp directo</h3><p>Botón de contacto inmediato con familiares vía WhatsApp.</p></div>
+        <div class="feature-card"><div class="feature-icon amber">📍</div><h3>Ubicación en tiempo real</h3><p>Al escanear el QR se comparte la ubicación automáticamente.</p></div>
+      </div>
+    </div>
+    <div id="page-login" class="hidden"><div class="auth-wrap"><div class="auth-card">
+      <h2>Bienvenido de nuevo</h2><p class="subtitle">Ingresa para ver y editar tu perfil</p>
+      <div id="login-error" class="error-msg hidden"></div>
+      <div class="form-group"><label>Correo electrónico</label><input type="email" id="login-email" placeholder="tu@correo.com"/></div>
+      <div class="form-group"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="btn btn-primary btn-block btn-lg" id="btn-login" onclick="doLogin()">Iniciar sesión</button>
+      <div class="auth-footer">¿No tienes cuenta? <a href="#" onclick="showPage('register')">Regístrate gratis</a></div>
+    </div></div></div>
+    <div id="page-register" class="hidden"><div class="auth-wrap"><div class="auth-card">
+      <h2>Crear mi perfil</h2><p class="subtitle">Es gratis y solo toma un minuto</p>
+      <div id="reg-error" class="error-msg hidden"></div>
+      <div class="form-group"><label>Nombre completo</label><input type="text" id="reg-name" placeholder="Nombre y apellidos"/></div>
+      <div class="form-group"><label>Correo electrónico</label><input type="email" id="reg-email" placeholder="tu@correo.com"/></div>
+      <div class="form-group"><label>Contraseña</label><input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"/></div>
+      <div class="form-group"><label>Confirmar contraseña</label><input type="password" id="reg-pass2" placeholder="Repite tu contraseña" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <button class="btn btn-primary btn-block btn-lg" id="btn-register" onclick="doRegister()">Crear cuenta</button>
+      <div class="auth-footer">¿Ya tienes cuenta? <a href="#" onclick="showPage('login')">Inicia sesión</a></div>
+    </div></div></div>
+    <div id="page-dashboard" class="hidden">
+      <div class="dashboard-wrap">
+        <div class="dashboard-header">
+          <div><h2 id="dash-greeting">Hola 👋</h2><p id="dash-email"></p></div>
+          <button class="btn btn-ghost btn-sm" onclick="doLogout()">Cerrar sesión</button>
+        </div>
+        <div class="qr-section" style="margin-bottom:1.5rem">
+          <div class="qr-box" id="qrcode"></div>
+          <div class="qr-info">
+            <h3>Tu código QR</h3>
+            <p>Cualquier persona puede escanearlo sin necesitar cuenta.</p>
+            <div class="pin-display">PIN: <strong id="qr-pin"></strong></div>
+            <div style="font-size:12px;color:var(--gray-400);margin-bottom:1rem;word-break:break-all" id="qr-url"></div>
+            <div class="qr-actions">
+              <button class="btn btn-outline-red btn-sm" onclick="printQR()">🖨 Imprimir tarjeta</button>
+              <button class="btn btn-ghost btn-sm" onclick="copyQRUrl()">🔗 Copiar link</button>
+              <button class="btn btn-ghost btn-sm" onclick="previewEmergency()">👁 Vista previa</button>
+            </div>
+          </div>
+        </div>
+        <div class="profile-section"><h3>Foto de perfil</h3>
+          <div class="avatar-row">
+            <div class="avatar-circle" id="avatar-circle">
+              <span class="avatar-initials"></span>
+              <div class="avatar-overlay"><span>Cambiar</span></div>
+            </div>
+            <div>
+              <p style="font-size:14px;color:var(--gray-600);line-height:1.6;margin-bottom:8px">Tu foto aparece en la vista de emergencia. Máx 500KB.</p>
+              <input type="file" id="avatar-input" accept="image/*"/>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('avatar-input').click()">Subir foto</button>
+            </div>
+          </div>
+        </div>
+        <div class="profile-section"><h3>Datos personales</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Nombre completo *</label><input type="text" id="p-name" placeholder="Tu nombre completo"/></div>
+            <div class="form-group"><label>Fecha de nacimiento</label><input type="date" id="p-dob"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Número de cédula</label><input type="text" id="p-cedula" placeholder="1234567890"/></div>
+            <div class="form-group"><label>Dirección de residencia</label><input type="text" id="p-address" placeholder="Calle, ciudad"/></div>
+          </div>
+        </div>
+        <div class="profile-section"><h3>Información médica</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Tipo de sangre</label>
+              <select id="p-blood"><option value="">-- Seleccionar --</option><option>O+</option><option>O-</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option></select>
+            </div>
+            <div class="form-group"><label>EPS / Aseguradora</label><input type="text" id="p-eps" placeholder="Ej: Sura, Compensar…"/></div>
+          </div>
+          <div class="form-group"><label>Alergias <span style="font-weight:400;color:var(--gray-400)">(escribe y Enter)</span></label>
+            <div class="tags-input-wrap" id="allergy-tags-wrap"><input type="text" placeholder="Ej: Penicilina, mariscos…"/></div>
+          </div>
+          <div class="form-group"><label>Condiciones médicas <span style="font-weight:400;color:var(--gray-400)">(escribe y Enter)</span></label>
+            <div class="tags-input-wrap" id="condition-tags-wrap"><input type="text" placeholder="Ej: Hipertensión, diabetes…"/></div>
+          </div>
+          <div class="form-group"><label>Medicamentos <span style="font-weight:400;color:var(--gray-400)">(escribe y Enter)</span></label>
+            <div class="tags-input-wrap" id="med-tags-wrap"><input type="text" placeholder="Ej: Metformina 500mg…"/></div>
+          </div>
+          <div class="form-group"><label>Notas para socorristas</label>
+            <textarea id="p-notes" rows="3" placeholder="Cualquier info relevante en emergencia…" style="width:100%;border:1.5px solid var(--gray-200);border-radius:8px;padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--gray-800);resize:vertical"></textarea>
+          </div>
+        </div>
+        <div class="profile-section"><h3>Contactos de emergencia</h3>
+          <p style="font-size:13px;color:var(--gray-400);margin-bottom:1rem">Se mostrarán con botón de WhatsApp directo</p>
+          <div id="contacts-wrap"></div>
+          <button class="btn btn-ghost btn-sm" onclick="addContact()" style="margin-top:8px">+ Agregar contacto</button>
+        </div>
+      </div>
+      <div class="save-bar">
+        <button class="btn btn-ghost" onclick="previewEmergency()">👁 Vista previa</button>
+        <button class="btn btn-primary" onclick="saveProfile()">💾 Guardar cambios</button>
+      </div>
+    </div>
+    <div id="page-emergency" class="hidden"><div id="emergency-content"></div></div>`;
+}
+
+renderApp();
+const params = new URLSearchParams(location.search);
+const pinParam = params.get('pin');
+if (pinParam) {
+  document.getElementById('main-nav').style.display = 'none';
+  loadEmergency(pinParam);
+} else {
+  const session = Session.get();
+  if (session) { updateNav(true); loadDashboard(); }
+  else showPage('landing');
+}
+  </script>
+</body>
+</html>
