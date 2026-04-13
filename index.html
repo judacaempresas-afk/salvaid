@@ -188,6 +188,7 @@ body { min-height: 100vh; }
   <div id="app"></div>
   <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytOyo_jfy2e9TECCTC7B2gUEjLDq8rNLSWWKcmE9NYmr1IVA5aE5fAz0MbxGWzyFpH/exec';
+const GITHUB_BASE = 'https://judacaempresas-afk.github.io/salvaid/';
 
 const API = {
   async post(action, data) {
@@ -308,7 +309,7 @@ function generateQR(pin) {
   const wrap = document.getElementById('qrcode');
   if (!wrap) return;
   wrap.innerHTML = '';
-  const url = `${location.origin}${location.pathname}?pin=${pin}`;
+  const url = `${GITHUB_BASE}?pin=${pin}`;
   document.getElementById('qr-url').textContent = url;
   document.getElementById('qr-pin').textContent = pin;
   new QRCode(wrap, { text: url, width: 140, height: 140, colorDark: '#2C2B29', colorLight: '#FFFFFF', correctLevel: QRCode.CorrectLevel.H });
@@ -316,7 +317,7 @@ function generateQR(pin) {
 
 function printQR() {
   const session = Session.get();
-  const url = `${location.origin}${location.pathname}?pin=${session.pin}`;
+  const url = `${GITHUB_BASE}?pin=${session.pin}`;
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html><html><head><title>SalvaID QR</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -428,7 +429,7 @@ async function loadEmergency(pin) {
         <div style="font-size:48px;margin-bottom:1rem">🔍</div>
         <h2 style="font-family:var(--serif);margin-bottom:0.5rem">PIN no encontrado</h2>
         <p style="color:var(--gray-600);font-size:14px">El código <strong>${pin}</strong> no corresponde a ningún perfil.</p>
-        <a href="${location.pathname}" class="btn btn-primary" style="margin-top:1.5rem;display:inline-flex">Volver al inicio</a>
+        <a href="${GITHUB_BASE}" class="btn btn-primary" style="margin-top:1.5rem;display:inline-flex">Volver al inicio</a>
       </div>`;
       return;
     }
@@ -474,7 +475,7 @@ async function loadEmergency(pin) {
     ${p.notes ? `<div class="em-card"><div class="em-card-title">Notas adicionales</div><p style="font-size:14px;line-height:1.6">${p.notes}</p></div>` : ''}
     ${contactsHtml ? `<div class="em-card"><div class="em-card-title">Contactos de emergencia</div>${contactsHtml}</div>` : ''}
     <div class="em-card"><div class="em-card-title">Ubicación al escanear</div><div id="map"></div></div>
-    <div style="text-align:center;margin-top:2rem"><a href="${location.pathname}" class="btn btn-ghost btn-sm">← Volver a SalvaID</a></div>
+    <div style="text-align:center;margin-top:2rem"><a href="${GITHUB_BASE}" class="btn btn-ghost btn-sm">← Volver a SalvaID</a></div>
   </div>`;
 
   if (navigator.geolocation) {
@@ -540,7 +541,7 @@ function renderApp() {
   document.getElementById('app').innerHTML = `
     <div id="global-toast" class="toast"></div>
     <nav class="nav" id="main-nav">
-      <a class="nav-brand" href="#" onclick="goHome()">
+      <a class="nav-brand" href="${GITHUB_BASE}" onclick="goHome()">
         <div class="nav-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
         <span class="nav-title">SalvaID</span>
       </a>
