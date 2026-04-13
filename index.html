@@ -168,6 +168,31 @@ body { min-height: 100vh; }
 .sos-number { font-family: var(--serif); font-size: 28px; }
 .map-placeholder { background: var(--gray-100); border-radius: var(--radius-sm); height: 180px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; color: var(--gray-400); font-size: 14px; border: 1px solid var(--gray-200); }
 #map { height: 180px; border-radius: var(--radius-sm); border: 1px solid var(--gray-200); }
+
+/* ===== BOTÓN REPORTAR ===== */
+.btn-report { width: 100%; padding: 16px; background: var(--green); color: white; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 1rem; transition: background 0.18s, transform 0.18s; }
+.btn-report:hover { background: #196A3D; transform: translateY(-1px); }
+.btn-report:active { transform: translateY(0); }
+
+/* ===== MODAL REPORTE ===== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 0; animation: slideUp 0.25s ease; }
+.modal-overlay.hidden { display: none !important; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+.modal-card { background: white; border-radius: var(--radius) var(--radius) 0 0; padding: 2rem 1.5rem 2.5rem; width: 100%; max-width: 480px; }
+.modal-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--green-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem; font-size: 26px; }
+.modal-card h3 { font-family: var(--serif); font-size: 22px; text-align: center; margin-bottom: 0.6rem; }
+.modal-card p { font-size: 14px; color: var(--gray-600); text-align: center; line-height: 1.65; margin-bottom: 1.5rem; }
+.modal-actions { display: flex; flex-direction: column; gap: 10px; }
+.btn-share-loc { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-share-loc:hover { background: #196A3D; }
+.btn-cancel-modal { width: 100%; padding: 12px; background: transparent; color: var(--gray-600); border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px; cursor: pointer; }
+.btn-cancel-modal:hover { background: var(--gray-100); }
+
+/* Estado de éxito */
+.report-success { text-align: center; padding: 1rem 0; }
+.report-success .success-icon { font-size: 48px; margin-bottom: 1rem; }
+.report-success h3 { font-family: var(--serif); font-size: 22px; margin-bottom: 0.5rem; color: var(--green); }
+.report-success p { font-size: 14px; color: var(--gray-600); line-height: 1.6; }
 .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-200); padding: 1rem 2rem; display: flex; justify-content: flex-end; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 50; }
 .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--gray-800); color: white; padding: 10px 20px; border-radius: 99px; font-size: 14px; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 200; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -463,6 +488,9 @@ async function loadEmergency(pin) {
     </a>`;
   }).join('');
 
+  // Guardar perfil globalmente para el modal
+  window._perfilEmergencia = p;
+
   wrap.innerHTML = `<div class="emergency-wrap">
     <div class="sos-banner">
       <div class="sos-text"><strong>Emergencia — llama ahora</strong><span>Número de emergencias Colombia</span></div>
@@ -475,7 +503,27 @@ async function loadEmergency(pin) {
     ${p.notes ? `<div class="em-card"><div class="em-card-title">Notas adicionales</div><p style="font-size:14px;line-height:1.6">${p.notes}</p></div>` : ''}
     ${contactsHtml ? `<div class="em-card"><div class="em-card-title">Contactos de emergencia</div>${contactsHtml}</div>` : ''}
     <div class="em-card"><div class="em-card-title">Ubicación al escanear</div><div id="map"></div></div>
-    <div style="text-align:center;margin-top:2rem"><a href="${GITHUB_BASE}" class="btn btn-ghost btn-sm">← Volver a SalvaID</a></div>
+
+    <button class="btn-report" onclick="mostrarModalReporte(window._perfilEmergencia)">
+      🙋 Reportar persona encontrada
+    </button>
+
+    <div style="text-align:center;margin-top:0.5rem"><a href="${GITHUB_BASE}" class="btn btn-ghost btn-sm">← Volver a SalvaID</a></div>
+  </div>
+
+  <!-- MODAL REPORTE -->
+  <div id="modal-reporte" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div id="modal-body">
+        <div class="modal-icon">📍</div>
+        <h3>Confirmar reporte</h3>
+        <p>Necesitamos tu ubicación para que los contactos de emergencia sepan dónde encontrar a esta persona.<br><br>Tu navegador te pedirá permiso para acceder a la ubicación.</p>
+        <div class="modal-actions">
+          <button class="btn-share-loc" onclick="compartirUbicacion()">📍 Compartir ubicación</button>
+          <button class="btn-cancel-modal" onclick="cerrarModalReporte()">Cancelar</button>
+        </div>
+      </div>
+    </div>
   </div>`;
 
   if (navigator.geolocation) {
@@ -491,6 +539,69 @@ async function loadEmergency(pin) {
       if (mapDiv) mapDiv.innerHTML = `<div class="map-placeholder"><span>📍</span><span>Ubicación no disponible</span></div>`;
     });
   }
+}
+
+// ===== REPORTAR PERSONA ENCONTRADA =====
+function mostrarModalReporte(profile) {
+  window._perfilEmergencia = profile;
+  const modal = document.getElementById('modal-reporte');
+  if (!modal) return;
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-icon">📍</div>
+    <h3>Confirmar reporte</h3>
+    <p>Necesitamos tu ubicación para que los contactos de emergencia sepan dónde encontrar a esta persona.<br><br>Tu navegador te pedirá permiso para acceder a la ubicación.</p>
+    <div class="modal-actions">
+      <button class="btn-share-loc" onclick="compartirUbicacion()">📍 Compartir ubicación</button>
+      <button class="btn-cancel-modal" onclick="cerrarModalReporte()">Cancelar</button>
+    </div>`;
+  modal.classList.remove('hidden');
+}
+
+function cerrarModalReporte() {
+  const modal = document.getElementById('modal-reporte');
+  if (modal) modal.classList.add('hidden');
+}
+
+function compartirUbicacion() {
+  const p = window._perfilEmergencia;
+  if (!p) return;
+  const btn = document.querySelector('.btn-share-loc');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Obteniendo ubicación...'; }
+  if (!navigator.geolocation) {
+    alert('Tu navegador no soporta geolocalización.');
+    if (btn) { btn.disabled = false; btn.textContent = '📍 Compartir ubicación'; }
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}&z=19`;
+      const nombre = p.name || 'la persona';
+      const mensaje = `Hola, tenemos una actualización importante.\n\nUna persona ha reportado haber encontrado a *${nombre}*.\n\nPara revisar el punto exacto donde fue vista, puedes consultar la siguiente ubicación:\n${mapsUrl}\n\nEste mensaje fue enviado automáticamente desde SalvaID para informarte lo antes posible.`;
+      const contactos = (p.contacts || []).filter(c => c.phone);
+      contactos.forEach((c, i) => {
+        const phone = String(c.phone || '').replace(/\D/g, '');
+        const waUrl = `https://wa.me/57${phone}?text=${encodeURIComponent(mensaje)}`;
+        setTimeout(() => window.open(waUrl, '_blank'), i * 900);
+      });
+      document.getElementById('modal-body').innerHTML = `
+        <div class="report-success">
+          <div class="success-icon">✅</div>
+          <h3>¡Reporte enviado!</h3>
+          <p>Se abrió WhatsApp para notificar a ${contactos.length > 0 ? contactos.length + ' contacto(s)' : 'los contactos'} de emergencia con tu ubicación exacta.</p>
+          <div style="margin-top:1.2rem">
+            <a href="${mapsUrl}" target="_blank" class="btn btn-ghost btn-sm" style="display:inline-flex">Ver ubicación en Maps</a>
+          </div>
+          <button class="btn-cancel-modal" onclick="cerrarModalReporte()" style="margin-top:10px;width:100%">Cerrar</button>
+        </div>`;
+    },
+    () => {
+      alert('No se pudo obtener la ubicación. Por favor permite el acceso en tu navegador.');
+      if (btn) { btn.disabled = false; btn.textContent = '📍 Compartir ubicación'; }
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
 }
 
 async function doLogin() {
